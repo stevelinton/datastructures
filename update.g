@@ -1,5 +1,5 @@
 #
-# GitHubgPagesForGAP - a template for using GitHub Pages within GAP packages
+# GitHubPagesForGAP - a template for using GitHub Pages within GAP packages
 #
 # Copyright (c) 2013-2014 Max Horn
 #
@@ -46,17 +46,17 @@ PrintPackageList := function(stream, pkgs)
     AppendTo(stream, "\n");
 end;
 
-# HACK
-MakeReadWriteGlobal("SetPackageInfo");
-SetPackageInfo:=function(pkg)
-    local stream, authors, maintainers, formats, f;
+GeneratePackageYML:=function(pkg)
+    local stream, authors, maintainers, formats, f, tmp;
+
     stream := OutputTextFile("_data/package.yml", false);
     SetPrintFormattingStatus(stream, false);
     
     AppendTo(stream, "name: ", pkg.PackageName, "\n");
     AppendTo(stream, "version: ", pkg.Version, "\n");
     AppendTo(stream, "date: ", pkg.Date, "\n"); # TODO: convert to ISO 8601?
-    AppendTo(stream, "description: ", pkg.Subtitle, "\n");
+    AppendTo(stream, "description: |\n");
+    AppendTo(stream, "    ", pkg.Subtitle, "\n");
     AppendTo(stream, "\n");
 
     authors := Filtered(pkg.Persons, p -> p.IsAuthor);
@@ -88,7 +88,9 @@ SetPackageInfo:=function(pkg)
     fi;
 
     AppendTo(stream, "www: ", pkg.PackageWWWHome, "\n");
-    AppendTo(stream, "readme: ", pkg.README_URL, "\n");
+    tmp := SplitString(pkg.README_URL,"/");
+    tmp := tmp[Length(tmp)];  # extract README filename (typically "README" or "README.md")
+    AppendTo(stream, "readme: ", tmp, "\n");
     AppendTo(stream, "packageinfo: ", pkg.PackageInfoURL, "\n");
     if IsBound(pkg.GithubWWW) then
         AppendTo(stream, "github: ", pkg.GithubWWW, "\n");
@@ -105,7 +107,8 @@ SetPackageInfo:=function(pkg)
         AppendTo(stream, "\n");
     fi;
 
-    AppendTo(stream, "abstract: ", pkg.AbstractHTML, "\n\n");
+    AppendTo(stream, "abstract: |\n");
+    AppendTo(stream, "    ", pkg.AbstractHTML, "\n\n");
 
     AppendTo(stream, "status: ", pkg.Status, "\n");
     AppendTo(stream, "doc-html: ", pkg.PackageDoc.HTMLStart, "\n");
@@ -117,4 +120,5 @@ SetPackageInfo:=function(pkg)
     CloseStream(stream);
 end;
 Read("PackageInfo.g");
+GeneratePackageYML(GAPInfo.PackageInfoCurrent);
 QUIT;
