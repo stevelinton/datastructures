@@ -11,6 +11,7 @@
 // hashfunctions: various hash functions
 //
 
+#include <stdlib.h> // for labs
 #include "hashfunctions.h"
 
 #include "src/objects.h"
